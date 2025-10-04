@@ -38,9 +38,7 @@ const RootQuery = new GraphQLObjectType({
       async resolve(_, args) {
         const company = await Company.findById(args.id);
         if (!company) {
-          throw new GraphQLError(
-            `Can't find the company with id (${args.id})`
-          );
+          throw new GraphQLError(`Can't find the company with id (${args.id})`);
         }
         return company;
       },
@@ -58,7 +56,6 @@ const RootQuery = new GraphQLObjectType({
 const Mutation = new GraphQLObjectType({
   name: "Mutation",
   fields: {
-    // Add Company
     addCompany: {
       type: CompanyType,
       args: {
@@ -66,15 +63,10 @@ const Mutation = new GraphQLObjectType({
         slogan: { type: GraphQLString },
       },
       async resolve(_, args) {
-        const company = new Company({
-          name: args.name,
-          slogan: args.slogan,
-        });
+        const company = new Company(args);
         return await company.save();
       },
     },
-
-    // Update Company
     updateCompany: {
       type: CompanyType,
       args: {
@@ -94,13 +86,9 @@ const Mutation = new GraphQLObjectType({
         return company;
       },
     },
-
-    // Delete Company
     deleteCompany: {
       type: CompanyType,
-      args: {
-        id: { type: new GraphQLNonNull(GraphQLID) },
-      },
+      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
       async resolve(_, args) {
         const company = await Company.findByIdAndDelete(args.id);
         if (!company) {
@@ -109,8 +97,6 @@ const Mutation = new GraphQLObjectType({
         return company;
       },
     },
-
-    // Add User
     addUser: {
       type: UserType,
       args: {
@@ -119,16 +105,10 @@ const Mutation = new GraphQLObjectType({
         companyId: { type: GraphQLID },
       },
       async resolve(_, args) {
-        const user = new User({
-          firstName: args.firstName,
-          age: args.age,
-          companyId: args.companyId,
-        });
+        const user = new User(args);
         return await user.save();
       },
     },
-
-    // Update User
     updateUser: {
       type: UserType,
       args: {
@@ -138,28 +118,16 @@ const Mutation = new GraphQLObjectType({
         companyId: { type: GraphQLID },
       },
       async resolve(_, args) {
-        const user = await User.findByIdAndUpdate(
-          args.id,
-          {
-            firstName: args.firstName,
-            age: args.age,
-            companyId: args.companyId,
-          },
-          { new: true }
-        );
+        const user = await User.findByIdAndUpdate(args.id, args, { new: true });
         if (!user) {
           throw new GraphQLError(`Can't update user with id (${args.id})`);
         }
         return user;
       },
     },
-
-    // Delete User
     deleteUser: {
       type: UserType,
-      args: {
-        id: { type: new GraphQLNonNull(GraphQLID) },
-      },
+      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
       async resolve(_, args) {
         const user = await User.findByIdAndDelete(args.id);
         if (!user) {

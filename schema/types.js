@@ -6,7 +6,7 @@ import {
   GraphQLID,
 } from "graphql";
 import mongoose from "mongoose";
-import { User, Company } from "../database/models.js";
+import { Company, User } from "../database/models.js";
 
 export const CompanyType = new GraphQLObjectType({
   name: "Company",
@@ -16,8 +16,8 @@ export const CompanyType = new GraphQLObjectType({
     slogan: { type: GraphQLString },
     users: {
       type: new GraphQLList(UserType),
-      async resolve(parent) {
-        return await User.find({ companyId: parent._id });
+      async resolve(parent, args, context) {
+        return await context.usersByCompanyLoader.load(parent._id.toString());
       },
     },
   }),
@@ -31,10 +31,10 @@ export const UserType = new GraphQLObjectType({
     age: { type: GraphQLInt },
     company: {
       type: CompanyType,
-      async resolve(parent) {
+      async resolve(parent, args, context) {
         if (!parent.companyId) return null;
         if (!mongoose.Types.ObjectId.isValid(parent.companyId)) return null;
-        return await Company.findById(parent.companyId);
+        return await context.companyLoader.load(parent.companyId.toString());
       },
     },
   }),

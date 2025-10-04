@@ -1,33 +1,39 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { graphqlHTTP } from "express-graphql";
-import connectDB from "./database/connection.js";
+
 import schema from "./schema/schema.js";
+import { companyLoader, usersByCompanyLoader } from "./loaders/loaders.js";
 
-dotenv.config();
-connectDB();
+// اتصال بقاعدة البيانات
+await mongoose.connect("mongodb://127.0.0.1:27017/graphql_test");
+console.log("✅ MongoDB connected");
 
+// إنشاء السيرفر
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
+// Route ترحيبي بسيط
 app.get("/welcoming", (req, res) => {
   res.send("Welcome To Express Server!");
 });
 
-let x = 0;
-
+// GraphQL endpoint
 app.use(
   "/graphql",
   graphqlHTTP((req, res) => ({
     schema,
     graphiql: true,
-    context: { test: x++ },
+    context: {
+      companyLoader,        // نفس الـ loaders
+      usersByCompanyLoader, // نفس الـ loaders
+    },
   }))
 );
 
+// تشغيل السيرفر
 app.listen(4000, () => {
-  console.log("🚀 Server running at: http://localhost:4000/graphql");
+  console.log("🚀 Server ready at http://localhost:4000/graphql");
 });
